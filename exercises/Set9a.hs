@@ -71,7 +71,14 @@ sameDigits str = ((str !! 2) == (str !! 4)) || ((str !! 3) == (str !! 5))
 --   repeated [1,2,1,2,3,3] ==> Just 3
 
 repeated :: Eq a => [a] -> Maybe a
-repeated = todo
+repeated xs = repeated' Nothing xs
+
+repeated' :: Eq a => Maybe a -> [a] -> Maybe a
+repeated' _ [] = Nothing
+repeated' Nothing (x:xs) = repeated' (Just x) xs
+repeated' (Just y) (x:xs)
+  | (y == x) = (Just x)
+  | otherwise = repeated' (Just x) xs
 
 ------------------------------------------------------------------------------
 -- Ex 5: A laboratory has been collecting measurements. Some of the
@@ -93,7 +100,15 @@ repeated = todo
 --     ==> Left "no data"
 
 sumSuccess :: [Either String Int] -> Either String Int
-sumSuccess = todo
+sumSuccess xs = sumSuccess' Nothing xs
+
+sumSuccess' :: Maybe Int -> [Either String Int] -> Either String Int
+sumSuccess' Nothing [] = (Left "no data")
+sumSuccess' (Just total) [] = (Right total)
+sumSuccess' (Just total) (x:xs) = case x of (Left s) -> sumSuccess' (Just total) xs
+                                            (Right v) -> sumSuccess' (Just (total + v)) xs
+sumSuccess' (Nothing) (x:xs) = case x of (Left s) -> sumSuccess' Nothing xs
+                                         (Right v) -> sumSuccess' (Just v) xs
 
 ------------------------------------------------------------------------------
 -- Ex 6: A combination lock can either be open or closed. The lock
@@ -115,30 +130,37 @@ sumSuccess = todo
 --   isOpen (open "0000" (lock (changeCode "0000" (open "1234" aLock)))) ==> True
 --   isOpen (open "1234" (lock (changeCode "0000" (open "1234" aLock)))) ==> False
 
-data Lock = LockUndefined
+data Lock = Open String | Closed String
   deriving Show
 
 -- aLock should be a locked lock with the code "1234"
 aLock :: Lock
-aLock = todo
+aLock = Closed "1234"
 
 -- isOpen returns True if the lock is open
 isOpen :: Lock -> Bool
-isOpen = todo
+isOpen (Open _) = True
+isOpen (Closed _) = False
 
 -- open tries to open the lock with the given code. If the code is
 -- wrong, nothing happens.
 open :: String -> Lock -> Lock
-open = todo
+open code (Closed key)
+  | (code == key) = (Open key)
+  | otherwise = (Closed key)
+
+open code (Open key) = Open key
 
 -- lock closes a lock. If the lock is already closed, nothing happens.
 lock :: Lock -> Lock
-lock = todo
+lock (Closed key) = (Closed key)
+lock (Open key) = (Closed key)
 
 -- changeCode changes the code of an open lock. If the lock is closed,
 -- nothing happens.
 changeCode :: String -> Lock -> Lock
-changeCode = todo
+changeCode code (Closed key) = (Closed key)
+changeCode code (Open key) = (Open code)
 
 ------------------------------------------------------------------------------
 -- Ex 7: Here's a type Text that just wraps a String. Implement an Eq
@@ -156,6 +178,8 @@ changeCode = todo
 data Text = Text String
   deriving Show
 
+instance Eq Text where
+  (==) (Text a) (Text b) = (filter (\x -> not (isSpace x)) a) == (filter (\x -> not (isSpace x)) b)
 
 ------------------------------------------------------------------------------
 -- Ex 8: We can represent functions or mappings as lists of pairs.
@@ -189,7 +213,11 @@ data Text = Text String
 --       ==> [("a",1),("b",2)]
 
 compose :: (Eq a, Eq b) => [(a,b)] -> [(b,c)] -> [(a,c)]
-compose = todo
+compose [] _ = []
+compose ((x,y):xs) ys =
+    case lookup y ys of
+        Just z  -> (x,z) : compose xs ys
+        Nothing -> compose xs ys
 
 ------------------------------------------------------------------------------
 -- Ex 9: Reorder a list using a list of indices.
@@ -233,4 +261,4 @@ multiply :: Permutation -> Permutation -> Permutation
 multiply p q = map (\i -> p !! (q !! i)) (identity (length p))
 
 permute :: Permutation -> [a] -> [a]
-permute = todo
+permute p xs = map snd (sortOn fst (zip p xs))
