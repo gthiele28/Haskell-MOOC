@@ -26,7 +26,10 @@ import Mooc.Todo
 -- Otherwise return "Ok."
 
 workload :: Int -> Int -> String
-workload nExercises hoursPerExercise = todo
+workload nExercises hoursPerExercise
+  | (nExercises * hoursPerExercise) > 100 = "Holy moly!"
+  | (nExercises * hoursPerExercise) > 10 = "Ok."
+  | otherwise = "Piece of cake!"
 
 ------------------------------------------------------------------------------
 -- Ex 2: Implement the function echo that builds a string like this:
@@ -39,7 +42,8 @@ workload nExercises hoursPerExercise = todo
 -- Hint: use recursion
 
 echo :: String -> String
-echo = todo
+echo [] = ""
+echo (x:xs) = (x:xs) ++ ", " ++ (echo xs)
 
 ------------------------------------------------------------------------------
 -- Ex 3: A country issues some banknotes. The banknotes have a serial
@@ -52,7 +56,10 @@ echo = todo
 -- are valid.
 
 countValid :: [String] -> Int
-countValid = todo
+countValid strs = length (filter sameDigits strs)
+
+sameDigits :: String -> Bool
+sameDigits str = ((str !! 2) == (str !! 4)) || ((str !! 3) == (str !! 5))
 
 ------------------------------------------------------------------------------
 -- Ex 4: Find the first element that repeats two or more times _in a
